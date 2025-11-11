@@ -332,6 +332,27 @@
             z-index: 1001;
             display: none;
         }
+        
+        /* Indicador de feedback */
+        .feedback-message {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .feedback-correct {
+            background-color: #d5f4e6;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+        
+        .feedback-incorrect {
+            background-color: #fadbd8;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -492,10 +513,6 @@
             },
             {
                 question: "Ao cadastrar-se em um aplicativo de investimentos, o usuário deve criar uma senha usando apenas os seguintes caracteres: algarismos de 0 a 9, 26 letras minúsculas, 26 letras maiúsculas e 6 caracteres especiais (!, @, #, &reg, &copy, &sect). Três formatos de senha são oferecidos: <br><br>- Tipo I: 4 caracteres distintos quaisquer<br>- Tipo II: 5 caracteres distintos começando com 3 letras, seguidos por 1 algarismo e 1 caractere especial<br>- Tipo III: 6 caracteres distintos começando com 2 letras, seguidos por 2 algarismos e 2 caracteres especiais<br><br>Se $p_1$, $p_2$ e $p_3$ representam as probabilidades de descobrir cada tipo de senha na primeira tentativa, qual tipo apresenta a menor probabilidade de ser descoberto?",
-
-
-
-
                 options: [
                     "Tipo I, pois $p_1 < p_2 < p_3$",
                     "Tipo I, pois tem menor quantidade de caracteres", 
@@ -658,10 +675,11 @@
                             </div>
                         `).join('')}
                     </div>
+                    <div id="feedbackMessage"></div>
                     <div style="margin-top: 20px;">
                         ${currentQuestion < questions.length - 1 ? 
-                            '<button class="btn" onclick="nextQuestion()">Próxima Questão →</button>' : 
-                            '<button class="btn btn-success" onclick="finishQuiz()">🏁 Finalizar Avaliação</button>'
+                            '<button class="btn" onclick="nextQuestion()" id="nextButton" style="display:none;">Próxima Questão →</button>' : 
+                            '<button class="btn btn-success" onclick="finishQuiz()" id="finishButton" style="display:none;">🏁 Finalizar Avaliação</button>'
                         }
                     </div>
                 </div>
@@ -692,14 +710,18 @@
                 opt.classList.remove('selected', 'incorrect');
             });
             
-            event.target.classList.add('selected');
+            event.currentTarget.classList.add('selected');
             studentAnswers[currentQuestion] = answerIndex;
 
             // Feedback imediato
             const correctIndex = questions[currentQuestion].correct;
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            
             if (answerIndex !== correctIndex) {
-                event.target.classList.add('incorrect');
-                options[correctIndex].classList.add('selected');
+                event.currentTarget.classList.add('incorrect');
+                
+                // Mostrar mensagem de erro
+                feedbackMessage.innerHTML = `<div class="feedback-message feedback-incorrect">❌ Resposta incorreta</div>`;
                 
                 // Tocar som de erro
                 playErrorSound();
@@ -709,6 +731,16 @@
                     nextQuestion();
                 }, 2000);
             } else {
+                // Mostrar mensagem de acerto
+                feedbackMessage.innerHTML = `<div class="feedback-message feedback-correct">✅ Resposta correta!</div>`;
+                
+                // Mostrar botão para avançar
+                if (currentQuestion < questions.length - 1) {
+                    document.getElementById('nextButton').style.display = 'inline-block';
+                } else {
+                    document.getElementById('finishButton').style.display = 'inline-block';
+                }
+                
                 // Tocar som de acerto e mostrar fogos de artifício
                 playSuccessSound();
                 createFireworks();
